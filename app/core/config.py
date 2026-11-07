@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
@@ -11,6 +12,11 @@ class Settings(BaseSettings):
     db_password: str
 
     cors_origins: list[str] = ["http://localhost:5173"]
+
+    jwt_secret: str = Field(min_length=32)
+    access_token_expire_minutes: int = Field(default=15, gt=0)
+    refresh_token_expire_days: int = Field(default=30, gt=0)
+    cookie_secure: bool = False
 
     @property
     def database_url(self) -> URL:

@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query, status
 
-from app.api.deps import Limit, Offset, SessionDep
+from app.api.deps import AdminUser, Limit, Offset, SessionDep
 from app.crud import books as crud
 from app.schemas.book import BookCreate, BookRead, BookUpdate
 
@@ -27,7 +27,7 @@ def list_genres(db: SessionDep) -> list[str]:
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-def create_book(db: SessionDep, data: BookCreate) -> BookRead:
+def create_book(db: SessionDep, data: BookCreate, _: AdminUser) -> BookRead:
     return crud.create_book(db, data)
 
 
@@ -37,10 +37,10 @@ def get_book(db: SessionDep, book_id: int) -> BookRead:
 
 
 @router.patch("/{book_id}")
-def update_book(db: SessionDep, book_id: int, data: BookUpdate) -> BookRead:
+def update_book(db: SessionDep, book_id: int, data: BookUpdate, _: AdminUser) -> BookRead:
     return crud.update_book(db, book_id, data)
 
 
 @router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_book(db: SessionDep, book_id: int) -> None:
+def delete_book(db: SessionDep, book_id: int, _: AdminUser) -> None:
     crud.delete_book(db, book_id)

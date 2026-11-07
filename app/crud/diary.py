@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.crud.books import book_not_found
-from app.crud.common import get_or_raise
+from app.crud.common import get_or_raise, require_owner
 from app.crud.users import user_not_found
 from app.models import Book, DiaryLog, User
 from app.schemas.diary import DiaryLogCreate, DiaryLogUpdate
@@ -32,8 +32,9 @@ def create_log(db: Session, user_id: int, data: DiaryLogCreate) -> DiaryLog:
     return log
 
 
-def update_log(db: Session, log_id: int, data: DiaryLogUpdate) -> DiaryLog:
+def update_log(db: Session, log_id: int, user_id: int, data: DiaryLogUpdate) -> DiaryLog:
     log = get_or_raise(db, DiaryLog, log_id, log_not_found(log_id))
+    require_owner(log.user_id, user_id)
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(log, field, value)
     db.commit()
@@ -41,7 +42,8 @@ def update_log(db: Session, log_id: int, data: DiaryLogUpdate) -> DiaryLog:
     return log
 
 
-def delete_log(db: Session, log_id: int) -> None:
+def delete_log(db: Session, log_id: int, user_id: int) -> None:
     log = get_or_raise(db, DiaryLog, log_id, log_not_found(log_id))
+    require_owner(log.user_id, user_id)
     db.delete(log)
     db.commit()

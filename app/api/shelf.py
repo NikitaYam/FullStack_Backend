@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query, status
 
-from app.api.deps import SessionDep
+from app.api.deps import CurrentUser, SelfUser, SessionDep
 from app.crud import shelf as crud
 from app.models import ReadingStatus
 from app.schemas.diary import QuoteCreate, QuoteRead, ShelfEntryCreate, ShelfEntryRead, ShelfEntryUpdate
@@ -14,38 +14,39 @@ router = APIRouter(tags=["Полка"])
 def list_shelf(
     db: SessionDep,
     user_id: int,
+    _: SelfUser,
     status_filter: Annotated[ReadingStatus | None, Query(alias="status")] = None,
 ) -> list[ShelfEntryRead]:
     return crud.list_shelf(db, user_id, status_filter)
 
 
 @router.post("/users/{user_id}/shelf", status_code=status.HTTP_201_CREATED)
-def add_to_shelf(db: SessionDep, user_id: int, data: ShelfEntryCreate) -> ShelfEntryRead:
+def add_to_shelf(db: SessionDep, user_id: int, data: ShelfEntryCreate, _: SelfUser) -> ShelfEntryRead:
     return crud.add_to_shelf(db, user_id, data)
 
 
 @router.get("/users/{user_id}/shelf/{book_id}")
-def get_entry(db: SessionDep, user_id: int, book_id: int) -> ShelfEntryRead:
+def get_entry(db: SessionDep, user_id: int, book_id: int, _: SelfUser) -> ShelfEntryRead:
     return crud.get_entry(db, user_id, book_id)
 
 
 @router.patch("/users/{user_id}/shelf/{book_id}")
 def update_entry(
-    db: SessionDep, user_id: int, book_id: int, data: ShelfEntryUpdate
+    db: SessionDep, user_id: int, book_id: int, data: ShelfEntryUpdate, _: SelfUser
 ) -> ShelfEntryRead:
     return crud.update_entry(db, user_id, book_id, data)
 
 
 @router.delete("/users/{user_id}/shelf/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_from_shelf(db: SessionDep, user_id: int, book_id: int) -> None:
+def remove_from_shelf(db: SessionDep, user_id: int, book_id: int, _: SelfUser) -> None:
     crud.remove_from_shelf(db, user_id, book_id)
 
 
 @router.post("/users/{user_id}/shelf/{book_id}/quotes", status_code=status.HTTP_201_CREATED)
-def add_quote(db: SessionDep, user_id: int, book_id: int, data: QuoteCreate) -> QuoteRead:
+def add_quote(db: SessionDep, user_id: int, book_id: int, data: QuoteCreate, _: SelfUser) -> QuoteRead:
     return crud.add_quote(db, user_id, book_id, data)
 
 
 @router.delete("/quotes/{quote_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_quote(db: SessionDep, quote_id: int) -> None:
-    crud.delete_quote(db, quote_id)
+def delete_quote(db: SessionDep, quote_id: int, user: CurrentUser) -> None:
+    crud.delete_quote(db, quote_id, user.id)

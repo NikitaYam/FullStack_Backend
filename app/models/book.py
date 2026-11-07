@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.user import User
 
 class Book(Base):
     __tablename__ = "books"
@@ -51,4 +52,7 @@ class Review(Base):
     rating: Mapped[int]
     text: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+    author: Mapped["User"] = relationship(lazy="joined")
+    book: Mapped[Book] = relationship(lazy="joined")
 

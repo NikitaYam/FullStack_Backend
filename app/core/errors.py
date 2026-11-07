@@ -14,6 +14,18 @@ class AppError(Exception):
         self.message = message
 
 
+class UnauthorizedError(AppError):
+    """Клиент не вошёл в систему или его токен недействителен."""
+
+    status_code = status.HTTP_401_UNAUTHORIZED
+
+
+class ForbiddenError(AppError):
+    """Клиент вошёл в систему, но не имеет права на эту операцию."""
+
+    status_code = status.HTTP_403_FORBIDDEN
+
+
 class NotFoundError(AppError):
     status_code = status.HTTP_404_NOT_FOUND
 
@@ -27,11 +39,13 @@ CONSTRAINT_MESSAGES = {
     "uq_chapters_book_id_number": "В книге уже есть глава с таким номером",
     "uq_reviews_book_id_author_id": "Пользователь уже оставил рецензию на эту книгу",
     "uq_user_books_user_id_book_id": "Эта книга уже есть на полке",
+    "uq_users_email": "Пользователь с таким email уже зарегистрирован",
 }
 
 
 async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
+    headers = {"WWW-Authenticate": "Bearer"} if isinstance(exc, UnauthorizedError) else None
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message}, headers=headers)
 
 
 async def integrity_error_handler(request: Request, exc: IntegrityError) -> JSONResponse:

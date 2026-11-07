@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.errors import NotFoundError
 from app.crud.books import book_not_found
-from app.crud.common import get_or_raise
+from app.crud.common import get_or_raise, require_owner
 from app.crud.users import user_not_found
 from app.models import Book, Quote, ReadingStatus, User, UserBook
 from app.schemas.diary import QuoteCreate, ShelfEntryCreate, ShelfEntryUpdate
@@ -81,7 +81,8 @@ def add_quote(db: Session, user_id: int, book_id: int, data: QuoteCreate) -> Quo
     return quote
 
 
-def delete_quote(db: Session, quote_id: int) -> None:
+def delete_quote(db: Session, quote_id: int, user_id: int) -> None:
     quote = get_or_raise(db, Quote, quote_id, quote_not_found(quote_id))
+    require_owner(quote.user_book.user_id, user_id)
     db.delete(quote)
     db.commit()

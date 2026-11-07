@@ -15,10 +15,6 @@ class UserBase(Schema):
     favorite_genres: Genres = []
 
 
-class UserCreate(UserBase):
-    pass
-
-
 class UserUpdate(UpdateSchema):
     name: UserName | None = None
     bio: OptionalContent | None = None
