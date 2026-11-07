@@ -3,7 +3,8 @@ from typing import Annotated
 
 from pydantic import Field
 
-from app.schemas.common import Content, Id, OptionalContent, Rating, Schema, Title, UpdateSchema
+from app.schemas.common import Content, OptionalContent, Rating, Schema, Title, UpdateSchema
+from app.schemas.user import UserBrief
 
 Genre = Annotated[str, Field(min_length=1, max_length=100)]
 Year = Annotated[int, Field(ge=0, le=2100)]
@@ -71,14 +72,6 @@ class ChapterUpdate(UpdateSchema):
     paragraphs: list[Content] | None = None
 
 
-class ChapterBrief(Schema):
-    """Пункт оглавления — без текста главы."""
-
-    id: int
-    number: int
-    title: str
-
-
 class ChapterRead(ChapterBase):
     id: int
     book_id: int
@@ -88,7 +81,6 @@ class ChapterRead(ChapterBase):
 
 
 class ReviewCreate(Schema):
-    author_id: Id
     rating: Rating
     text: OptionalContent = ""
 
@@ -101,7 +93,9 @@ class ReviewUpdate(UpdateSchema):
 class ReviewRead(Schema):
     id: int
     book_id: int
+    book: BookBrief
     author_id: int
+    author: UserBrief
     rating: int
     text: str
     created_at: datetime

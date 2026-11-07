@@ -1,3 +1,4 @@
+from app.models.auth import RefreshToken
 from app.models.book import Book, Chapter, Review
 from app.models.chat import Message
 from app.models.diary import DiaryLog, Quote, ReadingStatus, UserBook
@@ -14,6 +15,7 @@ __all__ = [
     "PostLike",
     "Quote",
     "ReadingStatus",
+    "RefreshToken",
     "Review",
     "User",
     "UserBook",

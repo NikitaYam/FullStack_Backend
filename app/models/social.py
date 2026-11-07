@@ -4,6 +4,8 @@ from sqlalchemy import ForeignKey, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.book import Book
+from app.models.user import User
 
 
 class Post(Base):
@@ -15,6 +17,8 @@ class Post(Base):
     text: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
+    author: Mapped["User"] = relationship(lazy="joined")
+    book: Mapped["Book | None"] = relationship(lazy="joined")
     comments: Mapped[list["PostComment"]] = relationship(
         back_populates="post",
         order_by="PostComment.created_at",
@@ -37,6 +41,7 @@ class PostComment(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     post: Mapped[Post] = relationship(back_populates="comments")
+    author: Mapped["User"] = relationship(lazy="joined")
 
 
 class PostLike(Base):

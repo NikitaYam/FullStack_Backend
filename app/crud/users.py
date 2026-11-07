@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import NotFoundError
 from app.crud.common import get_or_raise
 from app.models import ReadingStatus, User, UserBook
-from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.schemas.user import UserRead, UserUpdate
 
 
 def user_not_found(user_id: int) -> str:
@@ -35,14 +35,6 @@ def get_user(db: Session, user_id: int) -> UserRead:
     if row is None:
         raise NotFoundError(user_not_found(user_id))
     return _to_read(*row)
-
-
-def create_user(db: Session, data: UserCreate) -> UserRead:
-    user = User(**data.model_dump())
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return _to_read(user, 0)
 
 
 def update_user(db: Session, user_id: int, data: UserUpdate) -> UserRead:

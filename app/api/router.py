@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 
-from app.api import books, chapters, chats, diary, posts, reviews, shelf, users
+from app.api import auth, books, chapters, chats, diary, posts, reviews, shelf, users
 
 api_router = APIRouter(prefix="/api")
+api_router.include_router(auth.router)
 api_router.include_router(users.router)
 api_router.include_router(books.router)
 api_router.include_router(chapters.router)

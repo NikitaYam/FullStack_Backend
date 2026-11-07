@@ -1,5 +1,8 @@
 """Заполнение БД демонстрационными данными (те же, что в моках фронтенда).
 
+Демо-вход: nikita@example.com (администратор), anna@example.com, dmitry@example.com,
+maria@example.com — пароль у всех reader123.
+
 Запуск из папки Backend:
     python -m app.seed           — заполнить пустую БД
     python -m app.seed --reset   — очистить все таблицы и заполнить заново
@@ -12,6 +15,7 @@ import sys
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
+from app.core.security import hash_password
 from app.db.base import Base
 from app.db.session import SessionLocal
 from app.models import (
@@ -29,11 +33,13 @@ from app.models import (
     UserBook,
 )
 
+DEMO_PASSWORD = "reader123"
+
 USERS = {
-    "nikita": dict(name="Никита", bio="Читаю по вечерам, люблю классику и научпоп.", favorite_genres=["Роман", "Научпоп"]),
-    "anna": dict(name="Анна", bio="Фэнтези и детективы. Всегда ищу, что почитать дальше.", favorite_genres=["Фэнтези", "Детектив"]),
-    "dmitry": dict(name="Дмитрий", bio="Антиутопии, научная фантастика и история.", favorite_genres=["Антиутопия", "Научпоп"]),
-    "maria": dict(name="Мария", bio="Классическая литература и сказки.", favorite_genres=["Роман", "Сказка"]),
+    "nikita": dict(name="Никита", email="nikita@example.com", is_admin=True, bio="Читаю по вечерам, люблю классику и научпоп.", favorite_genres=["Роман", "Научпоп"]),
+    "anna": dict(name="Анна", email="anna@example.com", bio="Фэнтези и детективы. Всегда ищу, что почитать дальше.", favorite_genres=["Фэнтези", "Детектив"]),
+    "dmitry": dict(name="Дмитрий", email="dmitry@example.com", bio="Антиутопии, научная фантастика и история.", favorite_genres=["Антиутопия", "Научпоп"]),
+    "maria": dict(name="Мария", email="maria@example.com", bio="Классическая литература и сказки.", favorite_genres=["Роман", "Сказка"]),
 }
 
 BOOKS = {
@@ -120,7 +126,8 @@ def reset(db: Session) -> None:
 
 
 def seed(db: Session) -> None:
-    users = {key: User(**data) for key, data in USERS.items()}
+    password_hash = hash_password(DEMO_PASSWORD)
+    users = {key: User(password_hash=password_hash, **data) for key, data in USERS.items()}
     books = {key: Book(**data) for key, data in BOOKS.items()}
     db.add_all([*users.values(), *books.values()])
     db.flush()  # получить id до создания связанных записей
